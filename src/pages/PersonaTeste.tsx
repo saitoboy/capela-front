@@ -133,7 +133,7 @@ export default function PersonaTeste() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-md flex-col px-4 pb-8">
-      <header className="flex flex-col gap-3 py-4">
+      <header className="pt-topo flex flex-col gap-3 pb-4">
         <div className="flex items-center justify-between">
           <button
             type="button"

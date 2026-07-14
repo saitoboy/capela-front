@@ -21,7 +21,7 @@ export default function AppShell() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-md flex-col px-4 pb-20">
-      <header className="flex items-start justify-between py-4">
+      <header className="pt-topo flex items-start justify-between pb-4">
         <div>
           <p className="text-xl font-semibold">Olá, {primeiroNome}</p>
           {semestre && <p className="text-sm text-muted">{semestre.label}</p>}

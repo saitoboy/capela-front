@@ -10,7 +10,7 @@ export default function FlowShell() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-md flex-col px-4 pb-8">
-      <header className="py-4">
+      <header className="pt-topo pb-4">
         <button
           type="button"
           onClick={() => navigate(-1)}

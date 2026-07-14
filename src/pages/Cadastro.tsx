@@ -50,7 +50,7 @@ export default function Cadastro() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-md flex-col px-4 pb-8">
-      <header className="py-4">
+      <header className="pt-topo pb-4">
         <Link
           to="/login"
           aria-label="Voltar"
