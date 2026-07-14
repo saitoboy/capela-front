@@ -24,6 +24,20 @@ export function dataLonga(iso: string): string {
   });
 }
 
+/** "fev – jul" — o período de um semestre, na lista do admin. */
+export function periodoCurto(inicio: string, fim: string): string {
+  const mes = (iso: string) =>
+    new Date(iso).toLocaleDateString('pt-BR', { month: 'short', timeZone: 'UTC' })
+      .replace('.', '');
+
+  return `${mes(inicio)} – ${mes(fim)}`;
+}
+
+/** "2026-02-24T00:00:00.000Z" → "2026-02-24", que é o que o <input type="date"> quer. */
+export function paraCampoData(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
 /** "14:30" — quando uma chave esgotada da Groq volta. */
 export function hora(iso: string): string {
   return new Date(iso).toLocaleTimeString('pt-BR', {

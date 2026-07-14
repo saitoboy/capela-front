@@ -26,10 +26,14 @@ export default function Button({
   disabled,
   children,
   className,
+  // O padrão do HTML é "submit": sem isto, um botão qualquer dentro de um
+  // formulário (um "Cancelar", por exemplo) o envia sem querer.
+  type = 'button',
   ...props
 }: Props) {
   return (
     <button
+      type={type}
       disabled={disabled || loading}
       className={cn(
         'inline-flex w-full items-center justify-center gap-2 rounded-btn px-4 py-3',
