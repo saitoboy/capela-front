@@ -122,6 +122,8 @@ export interface GroqKey {
   erroMsg: string | null;
   criadoPor: string;
   createdAt: string;
+  tokensHoje: number; // tokens gastos hoje (cota diária TPD)
+  tpd: number | null; // limite diário do plano; null = GROQ_TPD não configurado no back
 }
 
 // ── Relatório ─────────────────────────────────────────────────────────────────

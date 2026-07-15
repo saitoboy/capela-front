@@ -12,6 +12,43 @@ import { cn } from '../lib/utils';
 
 type Estado = 'carregando' | 'pronto' | 'erro';
 
+/**
+ * Barra de "quanto da cota diária (TPD) esta chave já gastou hoje".
+ * É o sinal pra decidir cadastrar mais chaves: várias chaves batendo os 100%
+ * cedo no dia = a fila não dá conta, precisa de mais.
+ *
+ * Só aparece se o back souber o limite (GROQ_TPD). Os headers da Groq não dão o
+ * TPD, então o total vem do .env do backend.
+ */
+function CotaDiaria({ chave }: { chave: GroqKey }) {
+  if (!chave.tpd) return null;
+
+  const pct = Math.min(100, Math.round((chave.tokensHoje / chave.tpd) * 100));
+  const cor =
+    pct >= 100 ? 'bg-danger' : pct >= 75 ? 'bg-amber' : 'bg-lime';
+  const corTexto =
+    pct >= 100 ? 'text-danger' : pct >= 75 ? 'text-amber' : 'text-muted';
+
+  return (
+    <div className="mt-2 flex flex-col gap-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted">Cota de hoje</span>
+        <span className={corTexto}>{pct}%</span>
+      </div>
+      <div className="h-1.5 overflow-hidden rounded-full bg-line">
+        <div
+          className={cn('h-full rounded-full transition-[width] duration-500', cor)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-xs text-muted">
+        {chave.tokensHoje.toLocaleString('pt-BR')} de{' '}
+        {chave.tpd.toLocaleString('pt-BR')} tokens
+      </span>
+    </div>
+  );
+}
+
 /** O que o backend escolhe a seguir é a ATIVA menos usada — não a primeira da lista. */
 function proximaChave(chaves: GroqKey[]): string | null {
   const ativas = chaves.filter((k) => k.status === 'ATIVA');
@@ -181,6 +218,8 @@ export default function AdminChaves() {
             {k.lastUsedAt && (
               <p className="text-xs text-muted">usada {tempoRelativo(k.lastUsedAt)}</p>
             )}
+
+            <CotaDiaria chave={k} />
 
             {k.status === 'ESGOTADA' && k.resetAt && (
               <p className="text-xs">

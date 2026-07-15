@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Check, CircleDot, TriangleAlert } from 'lucide-react';
 import { api } from '../api/client';
-import type { Capela, Coleta, GroqKey, Semestre } from '../api/types';
+import type { Capela, Coleta, ColetaItem, GroqKey, Semestre } from '../api/types';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Input from '../components/Input';
@@ -18,6 +18,25 @@ const DIAS = [
   'Sexta-feira',
   'Sábado',
 ];
+
+// O `faltando` do item é uma foto tirada durante a coleta — não sabe de edição
+// manual feita depois. Então cruzamos com a capela viva e mantemos só o que
+// AINDA está em branco; assim, ao voltar, o que já foi preenchido some do log.
+function campoVazio(rotulo: string, c: Capela): boolean {
+  const r = rotulo.toLowerCase();
+  if (r.includes('tema')) return !c.tema?.trim();
+  if (r.includes('texto') || r.includes('bíblic') || r.includes('biblic'))
+    return !c.textoBiblico?.trim();
+  if (r.includes('pregador')) return !c.pregador?.trim();
+  if (r.includes('data')) return !c.data;
+  return true; // rótulo desconhecido: por segurança, segue pendente
+}
+
+function faltasAtuais(item: ColetaItem, capelas: Capela[]): string[] {
+  const capela = capelas.find((c) => c.indice === item.indice);
+  if (!capela) return item.faltando; // sem a capela viva, confia na foto da coleta
+  return item.faltando.filter((rotulo) => campoVazio(rotulo, capela));
+}
 
 export default function AdminColetar() {
   const navigate = useNavigate();
@@ -157,7 +176,8 @@ export default function AdminColetar() {
   const emCurso = coleta?.status === 'GERANDO';
   const pct = coleta && coleta.total > 0 ? (coleta.processadas / coleta.total) * 100 : 0;
   const erros = coleta?.itens.filter((i) => i.erro).length ?? 0;
-  const pendentes = coleta?.itens.filter((i) => i.faltando.length > 0).length ?? 0;
+  const pendentes =
+    coleta?.itens.filter((i) => faltasAtuais(i, capelas).length > 0).length ?? 0;
 
   return (
     <div className="flex flex-col gap-4">
@@ -378,7 +398,10 @@ export default function AdminColetar() {
               <Card className="flex flex-col divide-y divide-line p-0">
                 {coleta.itens.map((item) => {
                   const capelaId = idDaCapela(item.indice);
-                  const falta = item.faltando.length > 0;
+                  const capela = capelas.find((c) => c.indice === item.indice);
+                  const faltando = faltasAtuais(item, capelas);
+                  const falta = faltando.length > 0;
+                  const tema = capela?.tema?.trim() || item.tema;
 
                   return (
                     <div key={item.indice} className="flex flex-col gap-1 p-3">
@@ -394,7 +417,7 @@ export default function AdminColetar() {
                           {String(item.indice).padStart(2, '0')}
                         </span>
                         <span className="font-semibold">
-                          {item.tema ?? '(sem tema)'}
+                          {tema ?? '(sem tema)'}
                         </span>
                       </span>
 
@@ -408,7 +431,7 @@ export default function AdminColetar() {
                       {falta && (
                         <span className="flex items-center justify-between pl-6">
                           <span className="text-xs text-amber">
-                            falta: {item.faltando.join(', ')}
+                            falta: {faltando.join(', ')}
                           </span>
 
                           {capelaId && (
