@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA: qualquer rota cai no index.html. Sem isso, abrir/recarregar em /admin,
+# /capelas, /login etc. dá 404 no Netlify (o servidor procura um arquivo real).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

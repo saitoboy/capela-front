@@ -25,3 +25,6 @@ dist-ssr
 
 # env local
 .env
+
+# dumps de banco — contêm hashes de senha e e-mails; nunca versionar
+src/docs/*.sql
