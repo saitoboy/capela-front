@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, KeyRound, Play, Plus } from 'lucide-react';
+import { ArrowRight, KeyRound, Play, Plus, Users } from 'lucide-react';
 import { api } from '../api/client';
-import type { Capela, GroqKey, Semestre } from '../api/types';
+import type { Capela, GroqKey, Semestre, Usuario } from '../api/types';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import Input from '../components/Input';
@@ -17,6 +17,7 @@ export default function Admin() {
   const [semestres, setSemestres] = useState<Semestre[]>([]);
   const [capelasPorSemestre, setCapelasPorSemestre] = useState<Record<string, Capela[]>>({});
   const [chaves, setChaves] = useState<GroqKey[]>([]);
+  const [totalUsuarios, setTotalUsuarios] = useState<number | null>(null);
 
   const [estado, setEstado] = useState<Estado>('carregando');
   const [erro, setErro] = useState('');
@@ -35,7 +36,7 @@ export default function Admin() {
     try {
       const lista = await api<Semestre[]>('/semestre');
 
-      const [porSemestre, ks] = await Promise.all([
+      const [porSemestre, ks, us] = await Promise.all([
         Promise.all(
           lista.map((s) =>
             api<Capela[]>(`/capela?semestreId=${s.id}`).then(
@@ -43,13 +44,16 @@ export default function Admin() {
             ),
           ),
         ),
-        // O card de atalho mostra o estado da fila; falhar aqui não derruba a tela.
+        // Os cards de atalho mostram o estado da fila e a contagem de contas;
+        // falhar aqui não derruba a tela.
         api<GroqKey[]>('/groq-key').catch(() => [] as GroqKey[]),
+        api<Usuario[]>('/usuario').catch(() => [] as Usuario[]),
       ]);
 
       setSemestres(lista);
       setCapelasPorSemestre(Object.fromEntries(porSemestre));
       setChaves(ks);
+      setTotalUsuarios(us.length);
       setEstado('pronto');
     } catch (e) {
       setErro((e as Error).message);
@@ -260,6 +264,19 @@ export default function Admin() {
           {chaves.length === 0
             ? 'Nenhuma cadastrada'
             : `${ativas} ativas · ${esgotadas} esgotadas`}
+          <ArrowRight size={16} />
+        </span>
+      </Card>
+
+      <Card onClick={() => navigate('/admin/usuarios')} className="flex flex-col gap-1">
+        <span className="flex items-center gap-2 font-semibold">
+          <Users size={16} className="text-lime" />
+          Usuários
+        </span>
+        <span className="flex items-center justify-between text-sm text-muted">
+          {totalUsuarios === null
+            ? 'Ver e gerenciar contas'
+            : `${totalUsuarios} ${totalUsuarios === 1 ? 'conta' : 'contas'}`}
           <ArrowRight size={16} />
         </span>
       </Card>

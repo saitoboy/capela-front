@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Spinner from '../components/Spinner';
 import { useAuth } from '../auth/context';
+import logo from '../assets/capela-logotipo.svg';
 
 export default function Login() {
   const { usuario, carregando, entrar } = useAuth();
@@ -43,10 +44,12 @@ export default function Login() {
 
   return (
     <div className="mx-auto flex min-h-svh max-w-md flex-col justify-center px-4">
-      <div className="mb-10 text-center">
-        <p className="text-3xl font-semibold">
-          <span className="text-lime">◆</span> Capela
-        </p>
+      <div className="mb-10 flex flex-col items-center text-center">
+        <img
+          src={logo}
+          alt="Capela"
+          className="mb-3 w-64 max-w-full"
+        />
         <p className="text-sm text-muted">Relatórios de capela</p>
       </div>
 

@@ -16,6 +16,7 @@ import Admin from './pages/Admin';
 import AdminColetar from './pages/AdminColetar';
 import AdminCapela from './pages/AdminCapela';
 import AdminChaves from './pages/AdminChaves';
+import AdminUsuarios from './pages/AdminUsuarios';
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
               <Route path="/admin/coletar" element={<AdminColetar />} />
               <Route path="/admin/capelas/:id" element={<AdminCapela />} />
               <Route path="/admin/chaves" element={<AdminChaves />} />
+              <Route path="/admin/usuarios" element={<AdminUsuarios />} />
             </Route>
           </Route>
 
