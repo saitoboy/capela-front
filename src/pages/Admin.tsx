@@ -18,6 +18,7 @@ export default function Admin() {
   const [capelasPorSemestre, setCapelasPorSemestre] = useState<Record<string, Capela[]>>({});
   const [chaves, setChaves] = useState<GroqKey[]>([]);
   const [totalUsuarios, setTotalUsuarios] = useState<number | null>(null);
+  const [backIniciado, setBackIniciado] = useState<string | null>(null);
 
   const [estado, setEstado] = useState<Estado>('carregando');
   const [erro, setErro] = useState('');
@@ -49,6 +50,9 @@ export default function Admin() {
         // falhar aqui não derruba a tela.
         api<GroqKey[]>('/groq-key').catch(() => [] as GroqKey[]),
         api<Usuario[]>('/usuario').catch(() => [] as Usuario[]),
+        api<{ iniciadoEm?: string }>('/')
+          .then((r) => setBackIniciado(r.iniciadoEm ?? null))
+          .catch(() => setBackIniciado(null)),
       ]);
 
       setSemestres(lista);
@@ -311,6 +315,15 @@ export default function Admin() {
           <ArrowRight size={16} />
         </span>
       </Card>
+
+      <p className="pt-2 text-center text-xs text-muted">
+        Front {__COMMIT__} · {dataHora(__BUILD__)}
+        <br />
+        Back no ar desde {backIniciado ? dataHora(backIniciado) : '—'}
+      </p>
     </div>
   );
 }
+
+const dataHora = (iso: string) =>
+  new Date(iso).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
