@@ -51,6 +51,7 @@ export default function AdminColetar() {
   const [carregando, setCarregando] = useState(true);
   const [iniciando, setIniciando] = useState(false);
   const [erro, setErro] = useState('');
+  const [sinopsesFeitas, setSinopsesFeitas] = useState<number | null>(null);
 
   // Filtros. Vazio = o backend usa o default do .env dele — por isso não
   // chutamos aqui o valor do canal/palavra-chave: o front não conhece o .env.
@@ -157,6 +158,27 @@ export default function AdminColetar() {
       setErro((e as Error).message);
     } finally {
       setIniciando(false);
+    }
+  }
+
+  // Sem tema nem texto bíblico o backend recusa (422) — essas ficam de fora.
+  const semSinopse = capelas.filter((c) => !c.sinopse && (c.tema || c.textoBiblico));
+
+  // Uma por vez: em paralelo estoura o limite por minuto da Groq.
+  async function gerarSinopsesFaltando() {
+    setErro('');
+    setSinopsesFeitas(0);
+
+    try {
+      for (const [i, c] of semSinopse.entries()) {
+        await api(`/sinopse/${c.id}`, { metodo: 'POST' });
+        setSinopsesFeitas(i + 1);
+      }
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setSinopsesFeitas(null);
+      if (coleta) setCapelas(await api<Capela[]>(`/capela?semestreId=${coleta.semestreId}`));
     }
   }
 
@@ -372,6 +394,18 @@ export default function AdminColetar() {
                     preencha à mão.
                   </p>
                 </div>
+              )}
+
+              {(semSinopse.length > 0 || sinopsesFeitas !== null) && (
+                <Button
+                  variante="outline"
+                  disabled={sinopsesFeitas !== null}
+                  onClick={() => void gerarSinopsesFaltando()}
+                >
+                  {sinopsesFeitas !== null
+                    ? `Gerando sinopses… ${sinopsesFeitas} de ${semSinopse.length}`
+                    : `Gerar sinopses (${semSinopse.length} sem sinopse)`}
+                </Button>
               )}
 
               <Button onClick={() => navigate('/capelas')} icone={<ArrowRight size={18} />}>
