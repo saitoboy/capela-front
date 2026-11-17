@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, ChevronDown, ChevronRight, ExternalLink, Pencil } from 'lucide-react';
 import { api } from '../api/client';
-import type { Capela, Semestre } from '../api/types';
+import type { Capela, Semestre, Sinopse } from '../api/types';
 import { useAuth } from '../auth/context';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -20,6 +20,8 @@ export default function Capelas() {
   const [aberta, setAberta] = useState<string | null>(null);
   const [estado, setEstado] = useState<Estado>('carregando');
   const [erro, setErro] = useState('');
+  const [gerando, setGerando] = useState<string | null>(null);
+  const [erroSinopse, setErroSinopse] = useState<Record<string, string>>({});
 
   const buscar = useCallback(async () => {
     setEstado('carregando');
@@ -41,6 +43,21 @@ export default function Capelas() {
   useEffect(() => {
     void buscar();
   }, [buscar]);
+
+  async function gerarSinopse(id: string) {
+    setGerando(id);
+    setErroSinopse((m) => ({ ...m, [id]: '' }));
+
+    try {
+      const sinopse = await api<Sinopse>(`/sinopse/${id}`, { metodo: 'POST' });
+      setCapelas((cs) => cs.map((c) => (c.id === id ? { ...c, sinopse } : c)));
+      setAberta(id);
+    } catch (e) {
+      setErroSinopse((m) => ({ ...m, [id]: (e as Error).message }));
+    } finally {
+      setGerando(null);
+    }
+  }
 
   if (estado === 'carregando') {
     return (
@@ -145,6 +162,21 @@ export default function Capelas() {
                         </a>
                       )}
                     </div>
+                  )}
+                </>
+              ) : usuario?.isAdmin && (capela.tema || capela.textoBiblico) ? (
+                <>
+                  <Button
+                    variante="outline"
+                    className="py-2 text-sm"
+                    loading={gerando === capela.id}
+                    disabled={gerando !== null}
+                    onClick={() => void gerarSinopse(capela.id)}
+                  >
+                    Gerar sinopse
+                  </Button>
+                  {erroSinopse[capela.id] && (
+                    <p className="text-sm text-danger">{erroSinopse[capela.id]}</p>
                   )}
                 </>
               ) : (
