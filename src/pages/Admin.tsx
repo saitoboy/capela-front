@@ -22,6 +22,7 @@ export default function Admin() {
   const [estado, setEstado] = useState<Estado>('carregando');
   const [erro, setErro] = useState('');
   const [ativando, setAtivando] = useState<string | null>(null);
+  const [excluindo, setExcluindo] = useState<string | null>(null);
 
   const [abrirForm, setAbrirForm] = useState(false);
   const [label, setLabel] = useState('');
@@ -79,7 +80,28 @@ export default function Admin() {
     }
   }
 
-  const datasInvertidas = !!inicio && !!fim && inicio >= fim;
+  async function excluir(semestre: Semestre, capelas: number) {
+    if (
+      !window.confirm(
+        `Excluir "${semestre.label}"? ${capelas} capela(s) e as sinopses vão junto. Não dá para desfazer.`,
+      )
+    )
+      return;
+
+    setExcluindo(semestre.id);
+    setErro('');
+
+    try {
+      await api(`/semestre/${semestre.id}`, { metodo: 'DELETE' });
+      await buscar();
+    } catch (e) {
+      setErro((e as Error).message);
+    } finally {
+      setExcluindo(null);
+    }
+  }
+
+  const datasInvertidas =!!inicio && !!fim && inicio >= fim;
 
   async function criar(evento: FormEvent) {
     evento.preventDefault();
@@ -173,6 +195,15 @@ export default function Admin() {
                   Ativar
                 </Button>
               )}
+
+              <Button
+                variante="ghost"
+                className="w-auto self-end px-3 py-1 text-sm text-danger"
+                loading={excluindo === semestre.id}
+                onClick={() => void excluir(semestre, capelas.length)}
+              >
+                Excluir
+              </Button>
             </Card>
           );
         })
