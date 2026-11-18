@@ -343,7 +343,7 @@ export default function AdminColetar() {
                 <div className="grid grid-cols-3 gap-2 text-center">
                   {[
                     ['inseridas', coleta.inseridas],
-                    ['atualizadas', coleta.atualizadas],
+                    ['já salvas', coleta.atualizadas],
                     ['erros', erros],
                   ].map(([rotulo, valor]) => (
                     <div key={rotulo}>
@@ -382,7 +382,7 @@ export default function AdminColetar() {
             )}
           </Card>
 
-          {/* As capelas já processadas ficam salvas; recoletar não refaz as prontas
+          {/* A coleta só cria: capelas já salvas (por vídeo ou data) são puladas
               nem apaga edição manual. */}
           {!emCurso && (
             <>
